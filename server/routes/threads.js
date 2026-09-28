@@ -1,12 +1,11 @@
 import { Router } from "express";
 import prisma from "../prisma/client.js";
+import verifyToken from "../middleware/verifyToken.js";
 
 const router = Router();
 
-// -------------------------------------------------------------
-//  GET /api/threads  — PUBLIC list (cursor pagination).
-//  Reads stay public: do NOT guard this route.
-// -------------------------------------------------------------
+// GET /api/threads
+// PUBLIC — do NOT protect this route
 router.get("/", async (req, res, next) => {
   try {
     const take = Number(req.query.take) || 10;
@@ -30,23 +29,26 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// -------------------------------------------------------------
-//  WRITE routes below.
-//  RIGHT NOW THEY ARE UNPROTECTED — anyone can create, edit,
-//  and delete threads. Your assignment is to guard these three
-//  with the verifyToken middleware (GET above stays public).
-// -------------------------------------------------------------
-
 // POST /api/threads
-router.post("/", async (req, res, next) => {
+// PROTECTED
+router.post("/", verifyToken, async (req, res, next) => {
   try {
     const { title, body, authorId } = req.body ?? {};
+
     if (!title || !body) {
-      return res.status(400).json({ error: "title and body are required" });
+      return res.status(400).json({
+        error: "title and body are required",
+      });
     }
+
     const thread = await prisma.thread.create({
-      data: { title, body, authorId: authorId ?? null },
+      data: {
+        title,
+        body,
+        authorId: authorId ?? null,
+      },
     });
+
     res.status(201).json(thread);
   } catch (error) {
     next(error);
@@ -54,14 +56,17 @@ router.post("/", async (req, res, next) => {
 });
 
 // PUT /api/threads/:id
-router.put("/:id", async (req, res, next) => {
+// PROTECTED
+router.put("/:id", verifyToken, async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     const { title, body } = req.body ?? {};
+
     const thread = await prisma.thread.update({
       where: { id },
       data: { title, body },
     });
+
     res.json(thread);
   } catch (error) {
     next(error);
@@ -69,10 +74,15 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // DELETE /api/threads/:id
-router.delete("/:id", async (req, res, next) => {
+// PROTECTED
+router.delete("/:id", verifyToken, async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    await prisma.thread.delete({ where: { id } });
+
+    await prisma.thread.delete({
+      where: { id },
+    });
+
     res.status(204).end();
   } catch (error) {
     next(error);
