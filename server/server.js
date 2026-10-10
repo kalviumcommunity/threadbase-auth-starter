@@ -1,3 +1,4 @@
+import verifyToken from "./middleware/verifyToken.js";
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -15,6 +16,9 @@ app.use("/api/threads", threadsRouter);
 // -------------------------------------------------------------
 //  TODO (assignment): add a protected route here
 //      GET /api/me  ->  returns req.user
+app.get("/api/me", verifyToken, (req, res) => {
+  res.json({ user: req.user });
+});
 //  Apply your verifyToken middleware to it.
 // -------------------------------------------------------------
 
