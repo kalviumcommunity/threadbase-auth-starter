@@ -4,13 +4,18 @@ import cors from "cors";
 import threadsRouter from "./routes/threads.js";
 import authRouter from "./routes/auth.js";
 import prisma from "./prisma/client.js";
+import verifyToken from "./middleware/verifyToken.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 app.use("/auth", authRouter);          // provided scaffold — issues tokens
 app.use("/api/threads", threadsRouter);
+app.get("/api/me", verifyToken, (req, res) => {
+  res.json(req.user);
+});
 
 // -------------------------------------------------------------
 //  TODO (assignment): add a protected route here
