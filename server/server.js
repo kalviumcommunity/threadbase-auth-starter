@@ -4,6 +4,7 @@ import cors from "cors";
 import threadsRouter from "./routes/threads.js";
 import authRouter from "./routes/auth.js";
 import prisma from "./prisma/client.js";
+import verifyToken from "./middleware/verifyToken.js";
 
 const app = express();
 app.use(cors());
@@ -29,6 +30,10 @@ const PORT = 3001;
 async function start() {
   await prisma.$connect();
   console.log("✅ Prisma connected");
+  // GET /api/me — PROTECTED
+app.get("/api/me", verifyToken, (req, res) => {
+  res.json(req.user);
+});
   app.listen(PORT, () => {
     console.log(`✅ Threadbase API running on http://localhost:${PORT}`);
   });
