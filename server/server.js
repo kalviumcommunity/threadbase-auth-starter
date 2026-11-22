@@ -4,7 +4,7 @@ import cors from "cors";
 import threadsRouter from "./routes/threads.js";
 import authRouter from "./routes/auth.js";
 import prisma from "./prisma/client.js";
-
+import verifyToken from "./middleware/verifyToken.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,7 +17,7 @@ app.use("/api/threads", threadsRouter);
 //      GET /api/me  ->  returns req.user
 //  Apply your verifyToken middleware to it.
 // -------------------------------------------------------------
-
+app.get("/api/me", verifyToken, (req, res) => res.json({ user: req.user }));
 // Global error handler (4 arguments).
 app.use((err, req, res, next) => {
   console.error(err);
